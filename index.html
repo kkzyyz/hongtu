@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的小店</title>
+<style>
+:root{--brand:#ff5000;--brand2:#ff7a00;--bg:#f5f5f5;--card:#fff;--text:#222;--sub:#888}
+@media (prefers-color-scheme:dark){:root{--bg:#161616;--card:#232323;--text:#eee;--sub:#999}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(90deg,var(--brand),var(--brand2));padding:12px 16px;position:sticky;top:0;z-index:5}
+.bar{max-width:1100px;margin:auto;display:flex;gap:12px;align-items:center}
+.logo{color:#fff;font-size:22px;font-weight:700;white-space:nowrap}
+.search{flex:1;display:flex;background:#fff;border-radius:22px;overflow:hidden;border:2px solid #fff}
+.search input{flex:1;border:0;padding:9px 14px;font-size:15px;outline:none;color:#222;min-width:0}
+.search button{border:0;background:var(--brand);color:#fff;padding:0 20px;font-size:15px;cursor:pointer}
+.cart{color:#fff;font-size:15px;white-space:nowrap}
+nav{background:var(--card);overflow-x:auto;white-space:nowrap;border-bottom:1px solid #8882}
+nav div{max-width:1100px;margin:auto;padding:0 8px}
+nav a{display:inline-block;padding:12px 14px;font-size:14px;color:var(--text);cursor:pointer}
+nav a.on{color:var(--brand);font-weight:700;border-bottom:2px solid var(--brand)}
+.banner{max-width:1100px;margin:12px auto;padding:0 12px}
+.banner div{border-radius:10px;padding:34px 24px;color:#fff;background:linear-gradient(120deg,#ff5000,#ffa000)}
+.banner h1{font-size:26px;margin-bottom:6px}
+main{max-width:1100px;margin:auto;padding:0 12px 40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.item{background:var(--card);border-radius:8px;overflow:hidden}
+.pic{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:56px}
+.info{padding:10px}
+.name{font-size:14px;line-height:1.4;height:40px;overflow:hidden}
+.row{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.price{color:var(--brand);font-weight:700;font-size:18px}
+.price small{font-size:12px}
+.sold{font-size:12px;color:var(--sub)}
+.add{margin-top:8px;width:100%;border:1px solid var(--brand);background:none;color:var(--brand);border-radius:16px;padding:6px;cursor:pointer;font-size:13px}
+.add:active{background:var(--brand);color:#fff}
+.empty{padding:40px;text-align:center;color:var(--sub)}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo">我的小店</div>
+    <div class="search">
+      <input id="q" placeholder="搜索商品" oninput="render()">
+      <button onclick="render()">搜索</button>
+    </div>
+    <div class="cart">购物车 <b id="n">0</b></div>
+  </div>
+</header>
+<nav><div id="tabs"></div></nav>
+<div class="banner"><div><h1>新店开张</h1><p>全场包邮，新人立减 10 元</p></div></div>
+<main><div class="grid" id="list"></div></main>
+
+<script>
+// 想改商品？只改下面这一段：name 名称，price 价格，sold 已售，cat 分类，icon 图标，bg 背景色
+const items=[
+ {name:"纯棉短袖T恤 夏季宽松百搭",price:39.9,sold:2310,cat:"服饰",icon:"👕",bg:"#ffe4d6"},
+ {name:"学生双肩包 大容量防水",price:89,sold:856,cat:"服饰",icon:"🎒",bg:"#dff0ff"},
+ {name:"运动鞋 轻便透气跑步鞋",price:159,sold:1520,cat:"服饰",icon:"👟",bg:"#e8f7e0"},
+ {name:"无线蓝牙耳机 长续航",price:99,sold:4200,cat:"数码",icon:"🎧",bg:"#eee5ff"},
+ {name:"快充数据线 1.5米",price:12.9,sold:9800,cat:"数码",icon:"🔌",bg:"#fff3cc"},
+ {name:"机械键盘 青轴 87键",price:199,sold:640,cat:"数码",icon:"⌨️",bg:"#e0e8ff"},
+ {name:"保温杯 500ml 不锈钢",price:45,sold:3300,cat:"家居",icon:"🥤",bg:"#ffe0e8"},
+ {name:"北欧风台灯 护眼",price:69,sold:975,cat:"家居",icon:"💡",bg:"#fff6d6"},
+ {name:"坚果大礼包 每日混合",price:35.8,sold:7800,cat:"零食",icon:"🥜",bg:"#f3e6d3"},
+ {name:"手工曲奇饼干 两盒装",price:28,sold:2100,cat:"零食",icon:"🍪",bg:"#ffe9cf"}
+];
+const cats=["全部",...new Set(items.map(i=>i.cat))];
+let cat="全部",count=0;
+function tabs(){
+  document.getElementById("tabs").innerHTML=cats.map(c=>`<a class="${c===cat?"on":""}" onclick="cat='${c}';tabs();render()">${c}</a>`).join("");
+}
+function render(){
+  const k=document.getElementById("q").value.trim();
+  const r=items.filter(i=>(cat==="全部"||i.cat===cat)&&i.name.includes(k));
+  document.getElementById("list").innerHTML=r.length?r.map(i=>`
+   <div class="item"><div class="pic" style="background:${i.bg}">${i.icon}</div>
+   <div class="info"><div class="name">${i.name}</div>
+   <div class="row"><span class="price"><small>¥</small>${i.price}</span><span class="sold">${i.sold}人付款</span></div>
+   <button class="add" onclick="count++;document.getElementById('n').textContent=count">加入购物车</button></div></div>`).join(""):'<div class="empty">没有找到相关商品</div>';
+}
+tabs();render();
+</script>
+</body>
+</html>
